@@ -143,7 +143,7 @@ def combine_lags(forward, back):
     result = pd.concat([forward, back], axis = 1)
     return result
 
-def construct_model_data(symbol_list, n = 10, flag = 3, blag = 10):
+def construct_model_data(symbol_list, n = 10, flag = 1, blag = 10):
     train = DataFrame()
     test = DataFrame()
     for i in symbol_list:
