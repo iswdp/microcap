@@ -9,9 +9,13 @@ def create_stock_dict(symbols):
     for i in symbols:
         print i
         data = import_stock_prices(i)
-        forward = forward_lag(data, i, 1)
-        back = back_lag(data, i, 10)
-        stock_data[i] = combine_lags(forward, back)
+        try:
+            forward = forward_lag(data, i, 1)
+            back = back_lag(data, i, 10)
+            stock_data[i] = combine_lags(forward, back)
+        except:
+            print 'Skipping this symbol'
+            pass
 
     return stock_data
 
@@ -83,6 +87,7 @@ def sim(symbols, begin, n):
     SPY = import_stock_prices('SPY')
     date_list = []
     delta = datetime.timedelta(days=1)
+    result = DataFrame()
 
     for i  in SPY['Date']:
         date_list.append(i)
@@ -104,14 +109,22 @@ def sim(symbols, begin, n):
         print i
         train, test = construct_rolling_model_data(stock_data, i, n)
         m.fit(train.ix[:,8:], train.ix[:,7])
-        pred = m.predict(test.ix[:,7:])
+        preds = m.predict(test.ix[:,7:])
 
         test = test.ix[:,1:7]
-        print test
-        print pred
+        test['Prediction'] = preds
+
+        if len(result) == 0:
+            result = test
+        else:
+            result = pd.concat([result, test], axis = 0)
+
+    result = result.reset_index()
+    del result['index']
+    return result
+
 
 symbols = ['TWOC', 'ACY']
 
-x = sim(symbols, '2014-04-14', n = 15)
-#x = symbol_slice(stock_data['TYBT'], '2014-01-21')
-#x, y = construct_rolling_model_data(stock_data, '2014-01-18', n = 15)
+result = sim(symbols, '2014-04-14', n = 15)
+result.to_csv('result.csv', sep = ',', index = False)

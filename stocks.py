@@ -1,4 +1,4 @@
-import urllib, re, datetime, random
+import urllib, re, datetime, random, time
 from pandas import DataFrame
 import pandas as pd
 
@@ -22,7 +22,7 @@ def import_stock_price_range(symbol, start_date, end_date):
         return data
     except:
         print 'No data available for selected dates.'
-        return None
+        return DataFrame()
 
 def import_stock_prices(symbol):
     #import stock data from yahoo finance and returns a dataframe of all historical price info
@@ -54,7 +54,9 @@ def import_stock_prices(symbol):
     start_date = str(start_month) +'/' + str(start_day) + '/' + str(start_year)
     end_date = str(end_month) + '/' + str(end_day) + '/' + str(end_year)
 
-    return import_stock_price_range(symbol, start_date, end_date)
+    result = import_stock_price_range(symbol, start_date, end_date)
+
+    return result
 
 def forward_lag(stock_data, symbol, n = 1, OP = 'Open'):
     #takes yahoo finance historical stock data and forward lags it for use in trading simulations
