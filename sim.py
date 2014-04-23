@@ -59,7 +59,6 @@ def construct_rolling_model_data(stock_data, begin, n = 15):
         stock_dict.pop(i)
 
     for i in stock_dict:
-        print i
 
         #Train------------------------------------------------------------------
         train_slice = stock_dict[i].ix[:(len(stock_dict[i])-2),:].reset_index()
@@ -107,27 +106,34 @@ def sim(symbols, begin, n):
 
     m = RandomForestRegressor(n_estimators=250, n_jobs=10)
     for i in date_list:
-        train, test = construct_rolling_model_data(stock_data, i, n)
-        train = train.replace([np.inf, -np.inf], np.nan)
-        test = test.replace([np.inf, -np.inf], np.nan)
-        train = train.dropna(axis=0)
-        test = test.dropna(axis=0)
+        try:
+            train, test = construct_rolling_model_data(stock_data, i, n)
+            train = train.replace([np.inf, -np.inf], np.nan)
+            test = test.replace([np.inf, -np.inf], np.nan)
+            train = train.dropna(axis=0)
+            test = test.dropna(axis=0)
 
-        print 'Fitting model for ' + str(i)
-        print ''
-        print test
-        m.fit(train.ix[:,8:], train.ix[:,7])
-        preds = m.predict(test.ix[:,7:])
+            print 'Fitting model for ' + str(i)
+            print ''
+            print test.head()
+            m.fit(train.ix[:,8:], train.ix[:,7])
+            preds = m.predict(test.ix[:,7:])
 
-        test = test.ix[:,1:7]
-        test['Prediction'] = preds
+            test = test.ix[:,1:7]
+            test['Prediction'] = preds
 
-        if len(result) == 0:
-            result = test
-        else:
-            result = pd.concat([result, test], axis = 0)
+            if len(result) == 0:
+                result = test
+            else:
+                result = pd.concat([result, test], axis = 0)
 
-        print '----------------------------------------------------------------------------------------------------------------'
+            print '----------------------------------------------------------------------------------------------------------------'
+
+        except:
+            print '-------------------------------------------------------------------------------------------------'
+            print 'Construct model error.  Skipping this date-------------------------------------------------------'
+            print '-------------------------------------------------------------------------------------------------'
+            pass
 
     result = result.reset_index()
     del result['index']
@@ -140,7 +146,7 @@ def main():
         symbols.append(i.strip())
     #symbols = symbols[0:5]
 
-    result = sim(symbols, '2005-01-01', n = 15)
+    result = sim(symbols, '2014-01-01', n = 15)
     result.to_csv('result.csv', sep = ',', index = False)
 
 if __name__ == '__main__':

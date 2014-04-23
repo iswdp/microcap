@@ -195,7 +195,7 @@ def main():
         symbols.append(i.strip())
     #symbols = symbols[0:5]
 
-    train, test = construct_model_data(symbols, n = 50, flag = 1, blag = 15)
+    train, test = construct_model_data(symbols, n = 50, flag = 1, blag = 12)
     train.to_csv('train.csv', sep = ',', index = False)
     test.to_csv('test.csv', sep = ',', index = False)
 
