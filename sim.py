@@ -2,6 +2,7 @@ from stocks import *
 import dateutil, datetime, random
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
+import numpy as np
 
 def create_stock_dict(symbols):
     stock_data = {}
@@ -11,7 +12,7 @@ def create_stock_dict(symbols):
         data = import_stock_prices(i)
         try:
             forward = forward_lag(data, i, 1)
-            back = back_lag(data, i, 10)
+            back = back_lag(data, i, 12)
             stock_data[i] = combine_lags(forward, back)
         except:
             print 'Skipping this symbol'
@@ -104,10 +105,17 @@ def sim(symbols, begin, n):
 
     stock_data = create_stock_dict(symbols)
 
-    m = RandomForestRegressor(n_estimators=1, n_jobs=1)
+    m = RandomForestRegressor(n_estimators=250, n_jobs=10)
     for i in date_list:
-        print i
         train, test = construct_rolling_model_data(stock_data, i, n)
+        train = train.replace([np.inf, -np.inf], np.nan)
+        test = test.replace([np.inf, -np.inf], np.nan)
+        train = train.dropna(axis=0)
+        test = test.dropna(axis=0)
+
+        print 'Fitting model for ' + str(i)
+        print ''
+        print test
         m.fit(train.ix[:,8:], train.ix[:,7])
         preds = m.predict(test.ix[:,7:])
 
@@ -119,12 +127,22 @@ def sim(symbols, begin, n):
         else:
             result = pd.concat([result, test], axis = 0)
 
+        print '----------------------------------------------------------------------------------------------------------------'
+
     result = result.reset_index()
     del result['index']
     return result
 
+def main():
+    fi = open('micro_cap_symbols.txt', 'r')
+    symbols = []
+    for i in fi:
+        symbols.append(i.strip())
+    #symbols = symbols[0:5]
 
-symbols = ['TWOC', 'ACY']
+    result = sim(symbols, '2005-01-01', n = 15)
+    result.to_csv('result.csv', sep = ',', index = False)
 
-result = sim(symbols, '2014-04-14', n = 15)
-result.to_csv('result.csv', sep = ',', index = False)
+if __name__ == '__main__':
+    status = main()
+    exit(status)
