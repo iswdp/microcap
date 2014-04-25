@@ -1,0 +1,6 @@
+#!/bin/bash
+python testing_framework.py
+python pennies.py
+python sim_filter.py
+echo 'Filtering-------------------------------------------------------------------'
+play bell.wav
