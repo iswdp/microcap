@@ -58,10 +58,11 @@ def import_stock_prices(symbol):
 
     return result
 
-def forward_lag(stock_data, symbol, n = 1, OP = 'Open'):
+def forward_lag(stock_data, symbol, n = 1, OP = 'Average Price'):
     #takes yahoo finance historical stock data and forward lags it for use in trading simulations
     data = stock_data
     data['Symbol'] = symbol
+    data['Average Price'] = (data['Open'] + data['High'] + data['Low'] + data['Close']) / 4.
     lag_list = []
     lag_name = 'Forward Lag  ' + str(n)
 
@@ -77,7 +78,7 @@ def forward_lag(stock_data, symbol, n = 1, OP = 'Open'):
     data[adj_price_name] = adj_price
     data = data[['Symbol', 'Adj Multiple', 'Date', OP, adj_price_name]]
 
-    for i in range(len(data) - n):
+    for i in range(len(data) - (n)):
         lag_list.append(((data[adj_price_name][i + n]) / (data[adj_price_name][i])) - 1)
 
     data = data.ix[0:(len(data) - n - 1),:]
@@ -139,8 +140,12 @@ def combine_lags(forward, back):
     del back['Symbol']
     del back['Adj Multiple']
     del back['Date']
-    del back['Open']
-    del back['Adj Open']
+    try:
+        del back['Close']
+        del back['Adj Close']
+    except:
+        del back['Open']
+        del back['Adj Open']
 
     result = pd.concat([forward, back], axis = 1)
     return result
@@ -195,9 +200,9 @@ def main():
         symbols.append(i.strip())
     #symbols = symbols[0:5]
 
-    train, test = construct_model_data(symbols, n = 50, flag = 1, blag = 12)
-    train.to_csv('train.csv', sep = ',', index = False)
-    test.to_csv('test.csv', sep = ',', index = False)
+    train, test = construct_model_data(symbols, n = 50, flag = 3, blag = 20)
+    train.to_csv('stocks_train.csv', sep = ',', index = False)
+    test.to_csv('stocks_test.csv', sep = ',', index = False)
 
 if __name__ == '__main__':
     status = main()

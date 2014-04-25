@@ -140,14 +140,14 @@ def sim(symbols, begin, n):
     return result
 
 def main():
-    fi = open('micro_cap_symbols.txt', 'r')
+    fi = open('25-75_microcap_list.txt', 'r')
     symbols = []
     for i in fi:
         symbols.append(i.strip())
     #symbols = symbols[0:5]
 
-    result = sim(symbols, '2014-01-01', n = 15)
-    result.to_csv('result.csv', sep = ',', index = False)
+    result = sim(symbols, '2004-01-01', n = 30)
+    result.to_csv('large_micro_sim_result.csv', sep = ',', index = False)
 
 if __name__ == '__main__':
     status = main()
